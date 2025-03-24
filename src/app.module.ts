@@ -1,18 +1,26 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: '14.0.84.243',
-      port: 3306,
-      username: 'dev_keyedu',
-      password: 'keypub@8808',
-      database: 'dev_keyedu',
-      entities: [],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true, // makes ConfigService available globally
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        type: 'mysql',
+        host: config.get<string>('DB_HOST'),
+        port: config.get<number>('DB_PORT'),
+        username: config.get<string>('DB_USERNAME'),
+        password: config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_DATABASE'),
+        entities: [],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     AuthModule,
   ],
