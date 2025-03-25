@@ -8,9 +8,22 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
     super();
   }
-  validate(username: string, password: string) {
+  validate(
+    provider: 'kakao' | 'naver' | 'google',
+    id: string,
+    name: string,
+    password: string,
+    email: string,
+    phone: string,
+  ) {
     console.log('inside local strategy');
-    const user = this.authService.validateUser({ username, password });
+    const user = this.authService.validateOAuthUser({
+      provider,
+      id,
+      email,
+      name,
+      phone,
+    });
     if (!user) throw new UnauthorizedException();
     return user;
   }
