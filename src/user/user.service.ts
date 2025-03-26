@@ -16,11 +16,20 @@ export class UserService {
   }
 
   async findByKakaoId(kakaoId: string): Promise<User | null> {
-    return await this.userRepo.findOne({
-      where: [{ kakao_no: kakaoId }, { united_id: kakaoId }],
-    });
+    return this.userRepo.findOne({ where: { kakao_no: kakaoId } });
   }
 
+  async createWithKakao(data: {
+    kakao_no: string;
+    email?: string;
+    name: string;
+    phone_number: string;
+    id_provider: string;
+  }): Promise<User> {
+    const user = this.userRepo.create(data);
+
+    return this.userRepo.save(user);
+  }
   async createUser(data: Partial<User>): Promise<User> {
     const user = this.userRepo.create(data);
     return await this.userRepo.save(user);

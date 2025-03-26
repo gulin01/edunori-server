@@ -1,9 +1,12 @@
 // STEP 2: auth.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/user.entity';
+import axios from 'axios';
+import { UserService } from 'src/user/user.service';
+import { KakaoUser } from './auth.interface';
 
 interface OAuthProfile {
   provider: 'kakao' | 'naver' | 'google';
@@ -19,6 +22,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {}
 
   async validateOAuthUser(profile: OAuthProfile) {
@@ -98,5 +102,47 @@ export class AuthService {
     } catch (err: any) {
       throw new Error('Invalid or expired refresh token');
     }
+  }
+
+  async validateKakao(accessToken: string) {
+    try {
+      const kakaoUser = await axios.get<KakaoUser>(
+        'https://kapi.kakao.com/v2/user/me',
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+      console.log(kakaoUser.data, 'kakaoUser');
+
+      const kakao_no = kakaoUser.data.id.toString();
+      const email = kakaoUser.data.kakao_account?.email ?? '';
+      const name = kakaoUser.data.kakao_account?.name ?? 'KakoName';
+      const phone_number = kakaoUser.data.kakao_account?.phone_number ?? '';
+      console.log(kakao_no, email, name, 'KAKAO USER CREDETIALS');
+
+      let user = await this.userService.findByKakaoId(kakao_no);
+
+      if (!user) {
+        user = await this.userService.createWithKakao({
+          kakao_no,
+          email: email ?? 'samle@gmail.com',
+          name,
+          phone_number,
+          id_provider: 'kakao',
+        });
+      }
+
+      const token = this.jwtService.sign({ sub: user.id });
+
+      return { user, token };
+    } catch (error) {
+      console.error('Kakao login failed:', error);
+      throw new UnauthorizedException('Invalid Kakao token');
+    }
+  }
+
+  async generateJwt(user: User): Promise<string> {
+    const payload = { sub: user.id, email: user.email };
+    return await this.jwtService.signAsync(payload);
   }
 }

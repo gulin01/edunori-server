@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
     .setTitle('KeyEdu API')
-    .setDescription('Authentication and user API for KeyEdu mobile app')
+    .setDescription('API for EduNori mobile app')
     .setVersion('1.0')
     .addBearerAuth() // for JWT authorization
     .build();
