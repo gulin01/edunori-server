@@ -1,3 +1,4 @@
+import { kUserService } from './../keyedu/user/kuser.service';
 // STEP 2: auth.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,9 +8,11 @@ import { User } from '../user/user.entity';
 import axios from 'axios';
 import { UserService } from 'src/user/user.service';
 import { KakaoUser } from './auth.interface';
+import * as crypto from 'crypto';
+import { kUser } from 'src/keyedu/user/kuser.entity';
 
 interface OAuthProfile {
-  provider: 'kakao' | 'naver' | 'google';
+  provider: 'kakao' | 'naver' | 'google' | 'keyedu';
   id: string;
   email: string;
   name: string;
@@ -21,33 +24,28 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly kuserRepo: Repository<kUser>,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly kUserService: kUserService,
   ) {}
 
   async validateOAuthUser(profile: OAuthProfile) {
     let user = await this.userRepo.findOne({
-      where: [
-        { id_provider: profile.provider, kakao_no: profile.id },
-        { id_provider: profile.provider, united_id: profile.id },
-      ],
+      where: [{ provider_name: profile.provider, provider_id: profile.id }],
     });
 
     if (!user) {
       user = this.userRepo.create({
-        id: profile.email || `${profile.provider}_${profile.id}`,
         password: '',
         name: profile.name,
         email: profile.email,
         mobile_phone: profile.phone || '',
-        kakao_no: profile.id,
-        united_id: profile.id,
-        id_provider: profile.provider,
-        state: 'y',
+        provider_id: profile.id,
+        provider_name: profile.provider,
         join_date: new Date(),
         last_login: new Date(),
         login_cnt: 1,
-        grade: 1,
       });
     } else {
       user.last_login = new Date();
@@ -55,16 +53,16 @@ export class AuthService {
     }
 
     // Generate refresh token as JWT
-    const refreshPayload = { sub: user.code, id: user.id, type: 'refresh' };
+    const refreshPayload = { id: user.uid, type: 'refresh' };
     const refreshToken = this.jwtService.sign(refreshPayload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '7d',
     });
 
-    user.refresh_token = refreshToken;
+    // user.refresh_token = refreshToken;
     await this.userRepo.save(user);
 
-    const accessPayload = { sub: user.code, id: user.id };
+    const accessPayload = { id: user.uid };
     const accessToken = this.jwtService.sign(accessPayload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '15m',
@@ -73,36 +71,36 @@ export class AuthService {
     return { user, accessToken, refreshToken };
   }
 
-  async refreshAccessToken(refreshToken: string) {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const decoded = this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_SECRET,
-      });
+  // async refreshAccessToken(refreshToken: string) {
+  //   try {
+  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  //     const decoded = this.jwtService.verify(refreshToken, {
+  //       secret: process.env.JWT_SECRET,
+  //     });
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (decoded.type !== 'refresh') {
-        throw new Error('Invalid token type');
-      }
+  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  //     if (decoded.type !== 'refresh') {
+  //       throw new Error('Invalid token type');
+  //     }
 
-      const user = await this.userRepo.findOne({
-        where: { refresh_token: refreshToken },
-      });
-      if (!user) throw new Error('User not found');
+  //     const user = await this.userRepo.findOne({
+  //       where: { refresh_token: refreshToken },
+  //     });
+  //     if (!user) throw new Error('User not found');
 
-      const newAccessToken = this.jwtService.sign(
-        { sub: user.code, id: user.id },
-        {
-          secret: process.env.JWT_SECRET,
-          expiresIn: '15m',
-        },
-      );
+  //     const newAccessToken = this.jwtService.sign(
+  //       { sub: user.code, id: user.id },
+  //       {
+  //         secret: process.env.JWT_SECRET,
+  //         expiresIn: '15m',
+  //       },
+  //     );
 
-      return { accessToken: newAccessToken };
-    } catch (err: any) {
-      throw new Error('Invalid or expired refresh token');
-    }
-  }
+  //     return { accessToken: newAccessToken };
+  //   } catch (err: any) {
+  //     throw new Error('Invalid or expired refresh token');
+  //   }
+  // }
 
   async validateKakao(accessToken: string) {
     try {
@@ -132,7 +130,7 @@ export class AuthService {
         });
       }
 
-      const token = this.jwtService.sign({ sub: user.id });
+      const token = this.jwtService.sign({ id: user.uid });
 
       return { user, token };
     } catch (error) {
@@ -141,8 +139,34 @@ export class AuthService {
     }
   }
 
+  async validateKeyEdu(user_id: string, password: string) {
+    // Hash the password using MD5 (to match the legacy DB logic)
+    const hashedPassword = crypto
+      .createHash('md5')
+      .update(password)
+      .digest('hex');
+
+    // Try to find user by id OR united_id and compare MD5-hashed password
+    const user = await this.kUserService.findKeyEduUser(
+      user_id,
+      hashedPassword,
+    );
+
+    if (!user) {
+      //createUser
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Create user on KeyEdu side if needed
+    return await this.userService.createUser({
+      ...user,
+      name: user.name,
+      provider_name: 'key_edu',
+    });
+  }
+
   async generateJwt(user: User): Promise<string> {
-    const payload = { sub: user.id, email: user.email };
+    const payload = { id: user.uid };
     return await this.jwtService.signAsync(payload);
   }
 }

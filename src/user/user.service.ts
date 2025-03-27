@@ -16,7 +16,7 @@ export class UserService {
   }
 
   async findByKakaoId(kakaoId: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { kakao_no: kakaoId } });
+    return this.userRepo.findOne({ where: { provider_id: kakaoId } });
   }
 
   async createWithKakao(data: {
@@ -41,14 +41,7 @@ export class UserService {
     return await this.userRepo.save(user);
   }
 
-  async saveRefreshToken(user: User, token: string): Promise<void> {
-    user.refresh_token = token;
-    await this.userRepo.save(user);
-  }
-
-  async findByRefreshToken(token: string): Promise<User | null> {
-    return await this.userRepo.findOne({ where: { refresh_token: token } });
-  }
+  //key edu으로 로그인시
 }
 
 // STEP 5: Add to .env file

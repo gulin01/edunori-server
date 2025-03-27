@@ -1,127 +1,64 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity('tbmb01')
+@Entity('edunori_users') // Or 'edunori_users' if keeping the legacy name
 export class User {
-  @PrimaryGeneratedColumn({ unsigned: true })
-  code: number;
+  @PrimaryGeneratedColumn('uuid') // or 'increment'
+  uid: string; // Internal app ID or username
 
-  @Column({ type: 'char', length: 100, unique: true })
-  id: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  password: string | null; // Optional for social login
 
-  @Column({ type: 'char', length: 32 })
-  password: string;
+  @Column({ type: 'varchar', length: 20 })
+  provider_name: string; // e.g., 'google', 'kakao', 'naver'
 
-  @Column({ type: 'varchar', length: 8, default: '' })
-  id_provider: string;
+  @Column({ type: 'varchar', length: 100, unique: true })
+  provider_id: string; // Unique user ID from provider
 
-  @Column({ type: 'varchar', length: 16, default: '' })
-  kakao_no: string;
+  @Column({ type: 'varchar', length: 50 })
+  name: string;
 
-  @Column({ type: 'varchar', length: 255, default: '' })
-  access_token: string;
-
-  @Column({ type: 'text', nullable: true })
-  refresh_token: string;
-
-  @Column({ type: 'char', length: 20, nullable: true })
-  name: string | null;
-
-  @Column({ type: 'char', length: 32 })
+  @Column({ type: 'varchar', length: 100, unique: true })
   email: string;
 
-  @Column({ type: 'char', length: 32 })
-  sid: string;
+  @Column({ type: 'char', length: 8, nullable: true })
+  birthday: string | null;
 
-  @Column({ type: 'char', length: 8 })
-  birthday: string;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  phone: string | null;
 
-  @Column({ type: 'char', length: 20 })
-  phone: string;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  mobile_phone: string | null;
 
-  @Column({ type: 'char', length: 20 })
-  mobile_phone: string;
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  address1: string | null;
 
-  @Column({ type: 'varchar', length: 50, default: '' })
-  mb_pa_name: string;
-
-  @Column({ type: 'varchar', length: 50, default: '' })
-  mb_pa_hp: string;
-
-  @Column({ type: 'char', length: 64 })
-  address1: string;
-
-  @Column({ type: 'char', length: 64 })
-  address2: string;
-
-  @Column({ type: 'char', length: 16 })
-  ip_v4: string;
-
-  @Column({ type: 'char', length: 12 })
-  zipcode: string;
-
-  @Column({ type: 'varchar', length: 12, nullable: true })
-  zipcode_new: string | null;
-
-  @Column({ type: 'varchar', length: 128 })
-  inst_name: string;
-
-  @Column({ type: 'varchar', length: 128 })
-  affiliate: string;
-
-  @Column({ type: 'enum', enum: ['y', 'n'], default: 'n' })
-  affcheck: 'y' | 'n';
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  address2: string | null;
 
   @Column({ type: 'varchar', length: 16, nullable: true })
-  business_number: string | null;
+  ip_v4: string | null;
 
-  @Column({ type: 'smallint', unsigned: true, default: 1 })
-  grade: number;
+  @Column({ type: 'varchar', length: 12, nullable: true })
+  zipcode: string | null;
 
-  @Column({ type: 'varchar', length: 4000, nullable: true })
-  memo: string | null;
-
-  @Column({ type: 'enum', enum: ['y', 'n'], default: 'y' })
-  send_message: 'y' | 'n';
-
-  @Column({ type: 'datetime' })
+  @CreateDateColumn({ type: 'datetime' })
   join_date: Date;
 
-  @Column({ type: 'datetime' })
+  @UpdateDateColumn({ type: 'datetime' })
   last_login: Date;
 
   @Column({ type: 'int', unsigned: true, default: 0 })
   login_cnt: number;
 
-  @Column({ type: 'enum', enum: ['y', 'n'], default: 'y' })
-  state: 'y' | 'n';
+  @Column({ type: 'datetime', nullable: true })
+  leave_date: Date | null;
 
-  @Column({ type: 'datetime' })
-  leave_date: Date;
-
-  @Column({ type: 'text' })
-  outmemo: string;
-
-  @Column({ type: 'varchar', length: 5 })
-  mchk: string;
-
-  @Column({ type: 'varchar', length: 5 })
-  schk: string;
-
-  @Column({ type: 'varchar', length: 5 })
-  murl01: string;
-
-  @Column({ type: 'varchar', length: 5 })
-  murl02: string;
-
-  @Column({ type: 'char', length: 1, nullable: true })
-  mjoin: string | null;
-
-  @Column({ type: 'char', length: 1, nullable: true })
-  dormant_user: string | null;
-
-  @Column({ type: 'enum', enum: ['0', '1'], default: '0' })
-  united: '0' | '1';
-
-  @Column({ type: 'varchar', length: 100, default: '' })
-  united_id: string;
+  @Column({ type: 'text', nullable: true })
+  outmemo: string | null;
 }
