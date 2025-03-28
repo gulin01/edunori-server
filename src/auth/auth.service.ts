@@ -9,7 +9,6 @@ import axios from 'axios';
 import { UserService } from 'src/user/user.service';
 import { KakaoUser } from './auth.interface';
 import * as crypto from 'crypto';
-import { kUser } from 'src/keyedu/user/kuser.entity';
 
 interface OAuthProfile {
   provider: 'kakao' | 'naver' | 'google' | 'keyedu';
@@ -24,7 +23,6 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly kuserRepo: Repository<kUser>,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly kUserService: kUserService,
@@ -37,7 +35,6 @@ export class AuthService {
 
     if (!user) {
       user = this.userRepo.create({
-        password: '',
         name: profile.name,
         email: profile.email,
         mobile_phone: profile.phone || '',
@@ -71,37 +68,6 @@ export class AuthService {
     return { user, accessToken, refreshToken };
   }
 
-  // async refreshAccessToken(refreshToken: string) {
-  //   try {
-  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  //     const decoded = this.jwtService.verify(refreshToken, {
-  //       secret: process.env.JWT_SECRET,
-  //     });
-
-  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  //     if (decoded.type !== 'refresh') {
-  //       throw new Error('Invalid token type');
-  //     }
-
-  //     const user = await this.userRepo.findOne({
-  //       where: { refresh_token: refreshToken },
-  //     });
-  //     if (!user) throw new Error('User not found');
-
-  //     const newAccessToken = this.jwtService.sign(
-  //       { sub: user.code, id: user.id },
-  //       {
-  //         secret: process.env.JWT_SECRET,
-  //         expiresIn: '15m',
-  //       },
-  //     );
-
-  //     return { accessToken: newAccessToken };
-  //   } catch (err: any) {
-  //     throw new Error('Invalid or expired refresh token');
-  //   }
-  // }
-
   async validateKakao(accessToken: string) {
     try {
       const kakaoUser = await axios.get<KakaoUser>(
@@ -110,63 +76,92 @@ export class AuthService {
           headers: { Authorization: `Bearer ${accessToken}` },
         },
       );
-      console.log(kakaoUser.data, 'kakaoUser');
 
       const kakao_no = kakaoUser.data.id.toString();
       const email = kakaoUser.data.kakao_account?.email ?? '';
       const name = kakaoUser.data.kakao_account?.name ?? 'KakoName';
-      const phone_number = kakaoUser.data.kakao_account?.phone_number ?? '';
-      console.log(kakao_no, email, name, 'KAKAO USER CREDETIALS');
+      const phone = kakaoUser.data.kakao_account?.phone_number ?? '';
 
-      let user = await this.userService.findByKakaoId(kakao_no);
+      let user = await this.userService.findBySocialId(kakao_no);
 
       if (!user) {
-        user = await this.userService.createWithKakao({
-          kakao_no,
+        user = await this.userService.createUser({
+          provider_id: kakao_no,
           email: email ?? 'samle@gmail.com',
           name,
-          phone_number,
-          id_provider: 'kakao',
+          phone,
+          provider_name: 'kakao',
         });
       }
 
-      const token = this.jwtService.sign({ id: user.uid });
-
-      return { user, token };
+      return user;
     } catch (error) {
       console.error('Kakao login failed:', error);
       throw new UnauthorizedException('Invalid Kakao token');
     }
   }
 
-  async validateKeyEdu(user_id: string, password: string) {
-    // Hash the password using MD5 (to match the legacy DB logic)
+  async validateKeyEdu(userId: string, rawPassword: string) {
+    // Hash the password using MD5 (legacy logic)
     const hashedPassword = crypto
       .createHash('md5')
-      .update(password)
+      .update(rawPassword)
       .digest('hex');
 
-    // Try to find user by id OR united_id and compare MD5-hashed password
-    const user = await this.kUserService.findKeyEduUser(
-      user_id,
+    // Step 1: Find user in KeyEdu DB
+    const keyEduUser = await this.kUserService.findKeyEduUser(
+      userId,
       hashedPassword,
     );
 
-    if (!user) {
-      //createUser
-      throw new UnauthorizedException('Invalid credentials');
+    if (!keyEduUser) {
+      throw new UnauthorizedException('Invalid KeyEdu credentials');
     }
 
-    // Create user on KeyEdu side if needed
-    return await this.userService.createUser({
-      ...user,
-      name: user.name,
-      provider_name: 'key_edu',
+    // Step 2: Check if user already exists in Edunori DB
+    const existingUser = await this.userRepo.findOne({
+      where: { provider_id: keyEduUser.id }, // Make sure this field links to KeyEdu
     });
+    // Step 3: If not, create a new Edunori user
+    if (!existingUser) {
+      const newUser = await this.userService.createUser({
+        provider_id: keyEduUser.id,
+        provider_name: 'key_edu',
+        name: keyEduUser.name ?? '',
+        ip_v4: keyEduUser.ip_v4,
+        phone: keyEduUser.mobile_phone,
+        birthday: keyEduUser.birthday,
+        email: keyEduUser.email,
+        // Add more mapped fields if needed
+      });
+
+      return newUser;
+    }
+
+    // Step 4: Return the existing user
+    return existingUser;
   }
 
-  async generateJwt(user: User): Promise<string> {
+  async generateTokens(
+    user: User,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = { id: user.uid };
-    return await this.jwtService.signAsync(payload);
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1d',
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '30d',
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  async verifyRefreshToken(refreshToken: string): Promise<{ id: string }> {
+    return this.jwtService.verifyAsync(refreshToken, {
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
   }
 }

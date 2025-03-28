@@ -11,9 +11,6 @@ export class User {
   @PrimaryGeneratedColumn('uuid') // or 'increment'
   uid: string; // Internal app ID or username
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  password: string | null; // Optional for social login
-
   @Column({ type: 'varchar', length: 20 })
   provider_name: string; // e.g., 'google', 'kakao', 'naver'
 
@@ -61,4 +58,7 @@ export class User {
 
   @Column({ type: 'text', nullable: true })
   outmemo: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  refresh_token: string | null;
 }

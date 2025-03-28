@@ -12,33 +12,24 @@ export class UserService {
   ) {}
 
   async findById(id: string): Promise<User | null> {
-    return await this.userRepo.findOne({ where: { id } });
+    return await this.userRepo.findOne({ where: { uid: id } });
   }
 
-  async findByKakaoId(kakaoId: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { provider_id: kakaoId } });
-  }
-
-  async createWithKakao(data: {
-    kakao_no: string;
-    email?: string;
-    name: string;
-    phone_number: string;
-    id_provider: string;
-  }): Promise<User> {
-    const user = this.userRepo.create(data);
-
+  async update(user: User): Promise<User> {
     return this.userRepo.save(user);
+  }
+  async findBySocialId(socialId: string): Promise<User | null> {
+    return this.userRepo.findOne({ where: { provider_id: socialId } });
   }
   async createUser(data: Partial<User>): Promise<User> {
     const user = this.userRepo.create(data);
     return await this.userRepo.save(user);
   }
 
-  async updateLoginInfo(user: User): Promise<User> {
+  async updateLoginInfo(user: User) {
     user.last_login = new Date();
     user.login_cnt += 1;
-    return await this.userRepo.save(user);
+    await this.update(user);
   }
 
   //key edu으로 로그인시
