@@ -5,10 +5,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/user.entity';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { UserService } from 'src/user/user.service';
 import { KakaoUser } from './auth.interface';
 import * as crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
+import { importJWK, jwtVerify } from 'jose';
 
 interface OAuthProfile {
   provider: 'kakao' | 'naver' | 'google' | 'keyedu';
@@ -18,15 +20,67 @@ interface OAuthProfile {
   phone: string | null;
 }
 
+interface NaverProfile {
+  resultcode: string;
+  message: string;
+  response: {
+    id: string;
+    nickname?: string;
+    name?: string;
+    email?: string;
+    // You can add more fields if needed
+  };
+}
+
+interface GoogleProfile {
+  id: string;
+  email: string;
+  name?: string;
+  given_name?: string;
+  family_name?: string;
+  picture?: string;
+  locale?: string;
+}
+
+interface ApplePublicKey {
+  kid: string;
+  kty: string;
+  alg: string;
+  use: string;
+  n: string;
+  e: string;
+}
+
+interface AppleKeyResponse {
+  keys: ApplePublicKey[];
+}
+
+interface AppleJwtPayload {
+  sub: string;
+  email?: string;
+  email_verified?: boolean;
+  name?:
+    | string
+    | {
+        firstName?: string;
+        lastName?: string;
+      };
+  // Add more if needed
+}
+
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
+
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly kUserService: kUserService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  }
 
   async validateOAuthUser(profile: OAuthProfile) {
     let user = await this.userRepo.findOne({
@@ -82,7 +136,7 @@ export class AuthService {
       const name = kakaoUser.data.kakao_account?.name ?? 'KakoName';
       const phone = kakaoUser.data.kakao_account?.phone_number ?? '';
 
-      let user = await this.userService.findBySocialId(kakao_no);
+      let user = await this.userService.findBySocialId(kakao_no, 'kakao');
 
       if (!user) {
         user = await this.userService.createUser({
@@ -157,6 +211,122 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  async validateNaver(accessToken: string): Promise<User> {
+    const profileResponse: AxiosResponse<NaverProfile> = await axios.get(
+      'https://openapi.naver.com/v1/nid/me',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    const profile = profileResponse.data.response;
+
+    console.log('NAVER DATA', profile);
+
+    if (!profile || !profile.id) {
+      throw new UnauthorizedException('Invalid Naver token');
+    }
+
+    // Check if user exists
+    let user = await this.userService.findBySocialId(profile.id, 'naver');
+
+    // If not, create new user
+    if (!user) {
+      user = await this.userService.createUser({
+        provider_id: profile.id,
+        provider_name: 'naver',
+        name: profile.name || profile.nickname || 'NaverUser',
+        email: profile.email || '',
+      });
+    }
+
+    return user;
+  }
+
+  async validateGoogle(accessToken: string): Promise<User> {
+    const profileResponse: AxiosResponse<GoogleProfile> = await axios.get(
+      'https://www.googleapis.com/oauth2/v2/userinfo',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    const profile = profileResponse.data;
+    console.log(profile, 'GOOGLE RESPONSE');
+
+    if (!profile || !profile.id) {
+      throw new UnauthorizedException('Invalid Google token');
+    }
+
+    const googleId = profile.id;
+    const name = profile.name || 'GoogleUser';
+    const email = profile.email || '';
+
+    let user = await this.userService.findBySocialId(googleId, 'google');
+
+    if (!user) {
+      user = await this.userService.createUser({
+        provider_id: googleId,
+        provider_name: 'google',
+        name,
+        email,
+      });
+    }
+
+    return user;
+  }
+
+  async validateApple(identityToken: string): Promise<User> {
+    const appleKeysUrl = 'https://appleid.apple.com/auth/keys';
+
+    // Fetch Apple’s public keys
+    const res: AxiosResponse<AppleKeyResponse> = await axios.get(appleKeysUrl);
+    const keys = res.data.keys;
+
+    const { payload } = await jwtVerify<AppleJwtPayload>(
+      identityToken,
+      async (header) => {
+        const key = keys.find((k): k is ApplePublicKey => k.kid === header.kid);
+        if (!key) throw new UnauthorizedException('Invalid Apple token');
+        return await importJWK(key, 'RS256');
+      },
+    );
+
+    if (!payload || typeof payload.sub !== 'string') {
+      throw new UnauthorizedException('Invalid Apple identity token');
+    }
+
+    const appleId = payload.sub;
+    const email = typeof payload.email === 'string' ? payload.email : '';
+
+    // Handle name (if Apple sends it — usually on first login only)
+    const nameData = payload.name;
+    let fullName = '';
+
+    if (typeof nameData === 'string') {
+      fullName = nameData;
+    } else if (nameData && (nameData.firstName || nameData.lastName)) {
+      fullName =
+        `${nameData.firstName ?? ''} ${nameData.lastName ?? ''}`.trim();
+    }
+
+    let user = await this.userService.findBySocialId(appleId, 'apple');
+
+    if (!user) {
+      user = await this.userService.createUser({
+        provider_id: appleId,
+        provider_name: 'apple',
+        name: fullName,
+        email,
+      });
+    }
+    return user;
   }
 
   async verifyRefreshToken(refreshToken: string): Promise<{ id: string }> {

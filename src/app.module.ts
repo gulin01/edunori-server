@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { User } from './user/user.entity';
+import { TossModule } from './toss/toss.module';
 
 @Module({
   imports: [
@@ -25,10 +26,12 @@ import { User } from './user/user.entity';
           database: config.get<string>('DB_DATABASE'),
           entities: [__dirname + '/**/*.entity.{ts,js}'],
           synchronize: true,
+          charset: 'utf8mb4', // ✅ This matters!
         };
       },
     }),
     AuthModule,
+    TossModule,
   ],
   controllers: [],
   providers: [],

@@ -18,8 +18,13 @@ export class UserService {
   async update(user: User): Promise<User> {
     return this.userRepo.save(user);
   }
-  async findBySocialId(socialId: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { provider_id: socialId } });
+  async findBySocialId(
+    socialId: string,
+    provider_name: string,
+  ): Promise<User | null> {
+    return this.userRepo.findOne({
+      where: { provider_id: socialId, provider_name },
+    });
   }
   async createUser(data: Partial<User>): Promise<User> {
     const user = this.userRepo.create(data);

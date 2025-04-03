@@ -5,9 +5,10 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // (Optional) Enable CORS if needed
-  app.enableCors();
-
+  // (Optional) Enable CORS if need
+  app.enableCors({
+    origin: '*',
+  });
   // Swagger config
   const config = new DocumentBuilder()
     .setTitle('KeyEdu API')

@@ -92,6 +92,29 @@ export class AuthController {
     }
   }
 
+  @Post('naver')
+  @ApiOperation({ summary: 'Naver Login' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: { type: 'string', example: 'naver_access_token' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns JWT access and refresh tokens.',
+  })
+  async naverLogin(@Body('accessToken') accessToken: string) {
+    const user = await this.authService.validateNaver(accessToken);
+
+    const jwt = await this.authService.generateTokens(user);
+    user.refresh_token = jwt.refreshToken;
+    await this.userService.updateLoginInfo(user);
+    return jwt;
+  }
+
   @Post('refresh')
   @ApiBearerAuth('accessToken')
   @ApiOperation({ summary: 'Refresh JWT tokens' })
@@ -205,5 +228,43 @@ export class AuthController {
       console.error('Kakao callback error:', error);
       return res.status(400).json({ message: 'Kakao login failed' });
     }
+  }
+
+  @Post('google')
+  @ApiOperation({ summary: 'Google Login' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: { type: 'string', example: 'google_access_token' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Returns JWT tokens' })
+  async googleLogin(@Body('accessToken') accessToken: string) {
+    const user = await this.authService.validateGoogle(accessToken);
+    const tokens = await this.authService.generateTokens(user);
+    user.refresh_token = tokens.refreshToken;
+    await this.userService.updateLoginInfo(user);
+    return tokens;
+  }
+
+  @Post('apple')
+  @ApiOperation({ summary: 'Apple Login' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        identityToken: { type: 'string', example: 'jwt_from_apple' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Returns JWT tokens' })
+  async appleLogin(@Body('identityToken') identityToken: string) {
+    const user = await this.authService.validateApple(identityToken);
+    const tokens = await this.authService.generateTokens(user);
+    user.refresh_token = tokens.refreshToken;
+    await this.userService.updateLoginInfo(user);
+    return tokens;
   }
 }
