@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -37,7 +37,7 @@ export class UserService {
     await this.update(user);
   }
 
-  //key eduìœ¼ë¡œ ë¡œê·¸ì¸ì‹œ
+  //key edu?œ¼ë¡? ë¡œê·¸?¸?‹œ
 }
 
 // STEP 5: Add to .env file

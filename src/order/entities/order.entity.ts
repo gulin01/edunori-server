@@ -5,7 +5,33 @@ import {
   Index,
   OneToMany,
 } from 'typeorm';
-import { OrderGoodsEntity } from './order-good.entity';
+import { OrderGoodsEntity } from './ordered-goods.entity';
+
+export enum OrderState {
+  M0 = 'M0', // 주문 접수
+  M1 = 'M1', // 결제 완료
+  M2 = 'M2', // 배송 중
+  M3 = 'M3', // 완료
+}
+
+export enum OrderMethod {
+  BANK = 'bank',
+  ONLINE = 'online',
+  CARD = 'Card',
+  VCARD = 'VCard',
+  DIRECT_BANK = 'DirectBank',
+  HPP = 'HPP',
+  E100 = '100000000000',
+  E010 = '010000000000',
+  E001 = '001000000000',
+  E0001 = '000100000000',
+  E00001 = '000010000000',
+  E0000001 = '000000001000',
+  ESCROW = 'escrow',
+  SMS = 'SMS',
+  EASYPAY = 'easyPay',
+  ETC = 'etc',
+}
 
 @Entity('tbod01')
 export class OrderEntity {
@@ -50,14 +76,14 @@ export class OrderEntity {
   zipcode: string;
 
   @Index()
-  @Column({ type: 'varchar', length: 2 })
-  state: string;
+  @Column({ type: 'enum', enum: OrderState, default: OrderState.M0 })
+  state: OrderState;
 
   @Column({ type: 'int', unsigned: true })
   total_price: number;
 
-  @Column({ type: 'varchar', length: 2 })
-  order_method: string;
+  @Column({ type: 'enum', enum: OrderMethod, default: OrderMethod.BANK })
+  order_method: OrderMethod;
 
   @Index()
   @Column({ type: 'datetime' })
@@ -75,30 +101,6 @@ export class OrderEntity {
 
   @Column({ type: 'varchar', length: 2048, nullable: true })
   order_message: string;
-
-  @Column({
-    type: 'enum',
-    enum: [
-      'bank',
-      'online',
-      'Card',
-      'VCard',
-      'DirectBank',
-      'HPP',
-      '100000000000',
-      '010000000000',
-      '001000000000',
-      '000100000000',
-      '000010000000',
-      '000000001000',
-      'escrow',
-      'SMS',
-      'easyPay',
-      'etc',
-    ],
-    default: 'bank',
-  })
-  payment_method: string;
 
   @Column({ type: 'varchar', length: 100 })
   payment_info: string;

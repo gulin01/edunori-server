@@ -15,7 +15,7 @@ export class TossController {
       example: {
         orderId: 'order_12345',
         amount: 1000,
-        orderName: 'KeyEdu Book',
+        orderName: 'Edu nori Book',
         customerEmail: 'test@example.com',
         customerName: 'Gul',
       },

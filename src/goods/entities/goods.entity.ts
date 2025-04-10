@@ -1,9 +1,12 @@
+import { ProductEntity } from 'src/product/entities/product.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('tbgd01')
@@ -75,4 +78,8 @@ export class Goods {
 
   @Column({ type: 'int' })
   odrno: number;
+
+  @ManyToOne(() => ProductEntity, (product) => product.goods)
+  @JoinColumn({ name: 'pd_code' })
+  product: ProductEntity;
 }

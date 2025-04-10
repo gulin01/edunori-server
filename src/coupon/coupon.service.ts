@@ -69,7 +69,7 @@ export class CouponService {
       coupon_memo,
       target_group,
       reg_date: new Date(),
-      admin_id: dto.admin_id,
+      admin_id,
     });
 
     const savedMain = await this.couponMainRepo.save(main);
@@ -83,7 +83,7 @@ export class CouponService {
       const goods = selectedItems.map((code) =>
         this.couponGoodsRepo.create({
           coupon_main_no: savedMain.no,
-          gd_type: target_group,
+          gd_type: target_group as 'book' | 'lecture',
           code: Number(code),
         }),
       );
@@ -133,7 +133,7 @@ export class CouponService {
       const goods = selectedItems.map((code) =>
         this.couponGoodsRepo.create({
           coupon_main_no: dto.no,
-          gd_type: dto.target_group,
+          gd_type: (dto.target_group as 'book') || 'lecture',
           code: Number(code),
         }),
       );

@@ -4,7 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../user/user.entity';
+import { User } from '../user/entities/user.entity';
 import axios, { AxiosResponse } from 'axios';
 import { UserService } from 'src/user/user.service';
 import { KakaoUser } from './auth.interface';
@@ -285,7 +285,7 @@ export class AuthService {
   async validateApple(identityToken: string): Promise<User> {
     const appleKeysUrl = 'https://appleid.apple.com/auth/keys';
 
-    // Fetch Apple’s public keys
+    // Fetch Apple??�s public keys
     const res: AxiosResponse<AppleKeyResponse> = await axios.get(appleKeysUrl);
     const keys = res.data.keys;
 
@@ -305,7 +305,7 @@ export class AuthService {
     const appleId = payload.sub;
     const email = typeof payload.email === 'string' ? payload.email : '';
 
-    // Handle name (if Apple sends it — usually on first login only)
+    // Handle name (if Apple sends it ??? usually on first login only)
     const nameData = payload.name;
     let fullName = '';
 

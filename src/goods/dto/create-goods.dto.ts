@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional } from 'class-validator';
+import { IsString, IsInt, IsOptional, IsIn } from 'class-validator';
 
 export class CreateGoodsDto {
   @IsInt()
@@ -30,29 +30,38 @@ export class CreateGoodsDto {
   pay_method: string;
 
   @IsInt()
-  card_pay_install: number;
+  @IsOptional()
+  card_pay_install?: number;
+
+  @IsIn(['y', 'n'])
+  @IsOptional()
+  new_flag?: 'y' | 'n';
+
+  @IsIn(['y', 'n'])
+  @IsOptional()
+  cool_flag?: 'y' | 'n';
+
+  @IsIn(['y', 'n'])
+  @IsOptional()
+  recommend_flag?: 'y' | 'n';
+
+  @IsIn(['y', 'n'])
+  @IsOptional()
+  booking_flag?: 'y' | 'n';
+
+  @IsIn(['y', 'n'])
+  @IsOptional()
+  preview?: 'y' | 'n';
+
+  @IsIn(['y', 'n', 's', 'm'])
+  @IsOptional()
+  state?: 'y' | 'n' | 's' | 'm';
 
   @IsString()
-  new_flag: string;
-
-  @IsString()
-  cool_flag: string;
-
-  @IsString()
-  recommend_flag: string;
-
-  @IsString()
-  booking_flag: string;
-
-  @IsString()
-  preview: string;
-
-  @IsString()
-  state: string;
-
-  @IsString()
-  memo: string;
+  @IsOptional()
+  memo?: string;
 
   @IsInt()
-  order_grade: number;
+  @IsOptional()
+  order_grade?: number;
 }

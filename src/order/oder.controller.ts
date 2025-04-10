@@ -6,7 +6,6 @@ import {
   Param,
   Query,
   Body,
-  ParseIntPipe,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -16,6 +15,7 @@ import { CreateOrderDto } from './dto/order-create.dto';
 import { UpdateOrderDto } from './dto/order-update.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import { UpdateOrderStateDto } from './dto/update-order-state.dto';
+import { ListOrdersDto } from './dto/list-orders.dto';
 
 @Controller('orders')
 export class OrderController {
@@ -27,7 +27,9 @@ export class OrderController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createOrder(@Body() dto: CreateOrderDto) {
-    return this.orderService.create(dto);
+    const newOrder = await this.orderService.createOrder(dto);
+
+    return newOrder;
   }
 
   /**
@@ -38,7 +40,7 @@ export class OrderController {
     @Param('orderCode') orderCode: string,
     @Body() dto: UpdateOrderDto,
   ) {
-    return this.orderService.update(orderCode, dto);
+    return this.orderService.updateOrder(orderCode, dto);
   }
 
   /**
@@ -46,31 +48,15 @@ export class OrderController {
    */
   @Get(':orderCode')
   async getOrder(@Param('orderCode') orderCode: string) {
-    return this.orderService.view(orderCode);
+    return this.orderService.viewOrder(orderCode);
   }
 
   /**
    * 주문 목록 조회 (pagination + filters)
    */
   @Get()
-  async listOrders(
-    @Query('page', ParseIntPipe) page = 1,
-    @Query('state') state?: string,
-    @Query('method') method?: string,
-    @Query('id') id?: string,
-    @Query('attribute') attribute?: string,
-    @Query('keyword') keyword?: string,
-    @Query('where') whereCondition?: string,
-  ) {
-    return this.orderService.list({
-      page,
-      state,
-      method,
-      id,
-      attribute,
-      keyword,
-      whereCondition,
-    });
+  listOrders(@Query() filters: ListOrdersDto) {
+    return this.orderService.listOrders(filters);
   }
 
   /**

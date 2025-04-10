@@ -18,7 +18,7 @@ export class CreateCouponDto {
   @IsString()
   @IsOptional()
   @MaxLength(10)
-  coupon_keyword?: string;
+  coupon_keyword: string;
 
   @IsString()
   @IsOptional()

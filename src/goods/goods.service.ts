@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Goods } from './entities/goods.entity';
 import { CreateGoodsDto } from './dto/create-goods.dto';
 import { UpdateGoodsDto } from './dto/update-goods.dto';
 import { BasketItemForOrder } from './interfaces/BasketItemForOrder';
 import { BasketService } from 'src/basket/basket.service';
+import { Goods } from './entities/goods.entity';
 
 @Injectable()
 export class GoodsService {
@@ -91,12 +91,14 @@ export class GoodsService {
 
     const codes = basketItems.map((b) => b.gd_code);
 
-    const goods: Goods = await this.goodsRepo.findBy({
+    const goods = await this.goodsRepo.findBy({
       code: In(codes),
       state: 'y',
     });
     return basketItems.map((item): BasketItemForOrder => {
-      const matched = goods.find((g: any) => g.code === item.gd_code);
+      const matched = goods.find(
+        (g: { code: any; state: string }) => g.code === item.gd_code,
+      );
       if (!matched) {
         throw new BadRequestException(
           `상품 코드 ${item.gd_code}이 존재하지 않습니다.`,
@@ -110,7 +112,6 @@ export class GoodsService {
         gd_price: matched.gd_price,
         gd_subject: matched.gd_subject,
         card_pay_install: matched.card_pay_install,
-        lect_days: matched.lect_days ?? 0,
       };
     });
   }

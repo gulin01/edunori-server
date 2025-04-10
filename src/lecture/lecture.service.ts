@@ -1,13 +1,14 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-import { CreateLectureDto, UpdateLectureDto } from './dto';
-import { Lecture } from './entities/lecture.entity';
-import { Goods } from 'src/goods/entities/goods.service';
+import { Repository } from 'typeorm';
+import { ItemUnit, Lecture, LectureState } from './entities/lecture.entity';
+import { Goods } from 'src/goods/entities/goods.entity';
 import { ProductEntity } from 'src/product/entities/product.entity';
 import { TeacherInfo } from 'src/teacher/entity/teacher.entity';
 import { MovieInfoEntity } from 'src/movie/entities/move.entity';
 import { LectureMixedInfo } from './entities/lecture-mixed-info.entity';
+import { CreateLectureDto } from './dto/create-lecture.dto';
+import { UpdateLectureDto } from './dto/update-lecture.dto';
 
 @Injectable()
 export class LectureService {
@@ -35,9 +36,12 @@ export class LectureService {
 
     const saved = await this.lectureRepo.save(lecture);
 
-    if (item_unit === 'mixed' && item_no?.length) {
+    if (item_unit === ItemUnit.MIXED && item_no?.length) {
       const mixItems = item_no.map((lectNo) =>
-        this.mixedRepo.create({ ref_no: saved.lect_no, lect_no: lectNo }),
+        this.mixedRepo.create({
+          ref_no: saved.lect_no,
+          lect_no: lectNo,
+        }),
       );
       await this.mixedRepo.save(mixItems);
     }
@@ -47,7 +51,7 @@ export class LectureService {
 
   async update(dto: UpdateLectureDto, fileUrl?: string): Promise<Lecture> {
     const lecture = await this.lectureRepo.findOne({
-      where: { lect_no: dto.lect_no },
+      where: { lect_no: dto.lectNo },
     });
     if (!lecture) throw new BadRequestException('Lecture not found');
 
@@ -70,14 +74,14 @@ export class LectureService {
 
   async singleList(): Promise<Lecture[]> {
     return this.lectureRepo.find({
-      where: { item_unit: 'single', lect_state: 'y' },
+      where: { item_unit: ItemUnit.SINGLE, lect_state: LectureState.ACTIVE },
       order: { lect_name: 'ASC' },
     });
   }
 
   async allLectures(): Promise<Lecture[]> {
     return this.lectureRepo.find({
-      where: { lect_state: 'y' },
+      where: { lect_state: LectureState.ACTIVE },
       order: { item_unit: 'ASC', lect_name: 'ASC' },
     });
   }
@@ -88,7 +92,7 @@ export class LectureService {
       relations: ['lecture'],
     });
 
-    return mixes.map((mix) => mix.lecture.lect_name);
+    return mixes.map((mix): string => mix.parent_lecture.lect_name); // ? fixed
   }
 
   async view(lectNo: number): Promise<Lecture> {
@@ -96,16 +100,17 @@ export class LectureService {
   }
 
   async bookList(): Promise<Goods[]> {
-    return this.goodsRepo.find({
-      where: { state: 'y' },
-      order: { pd_name: 'ASC' },
-      relations: ['product'],
-    });
+    return this.goodsRepo
+      .createQueryBuilder('goods')
+      .leftJoinAndSelect('goods.product', 'product')
+      .where('goods.state = :state', { state: 'y' })
+      .orderBy('product.pd_name', 'ASC') // ? order by related entity field
+      .getMany();
   }
 
   async findByCategory(lectcate_no: number): Promise<Lecture[]> {
     return this.lectureRepo.find({
-      where: { lectcate_no, lect_state: 'y' },
+      where: { lectcate_no: lectcate_no, lect_state: LectureState.ACTIVE },
       order: { lect_name: 'ASC' },
     });
   }

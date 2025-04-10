@@ -9,23 +9,31 @@ import {
   UploadedFile,
   UseInterceptors,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { LectureService } from './lecture.service';
-import { CreateLectureDto, UpdateLectureDto } from './dto';
+
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateLectureDto } from './dto/create-lecture.dto';
+import { UpdateLectureDto } from './dto/update-lecture.dto';
 
 @Controller('lectures')
 export class LectureController {
   constructor(private readonly lectureService: LectureService) {}
 
   // Create Lecture
-  @Post()
+  @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async createLecture(
     @Body() dto: CreateLectureDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    const fileUrl = file ? `/uploads/${file.filename}` : undefined;
+    if (!file) {
+      throw new BadRequestException('파일이 업로드되지 않았습니다.');
+    }
+    console.log('MULTER< FILENAME', file);
+
+    const fileUrl = `/uploads/${file.originalname || ''}`;
     return this.lectureService.create(dto, fileUrl);
   }
 
@@ -37,8 +45,13 @@ export class LectureController {
     @Body() dto: UpdateLectureDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    const fileUrl = file ? `/uploads/${file.filename}` : undefined;
-    return this.lectureService.update({ ...dto, lect_no }, fileUrl);
+    const fileUrl = file?.originalname
+      ? `/uploads/${file.originalname}`
+      : undefined;
+    return this.lectureService.update(
+      { ...dto, lectcate_no: lect_no },
+      fileUrl,
+    );
   }
 
   // List paginated lectures

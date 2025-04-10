@@ -1,4 +1,10 @@
+import { IsEnum, IsOptional } from 'class-validator';
+import { OrderState } from '../entities/order.entity';
+
 export class UpdateOrderStateDto {
-  state: string;
+  @IsEnum(OrderState)
+  state: OrderState;
+
+  @IsOptional()
   markResultDate?: boolean;
 }

@@ -2,8 +2,14 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { User } from './user/user.entity';
+import { User } from './user/entities/user.entity';
 import { TossModule } from './toss/toss.module';
+import { MovieModule } from './movie/movie.module';
+import { OrdersModule } from './order/order.module';
+import { LectureModule } from './lecture/lecture.module';
+import { GoodsModule } from './goods/goods.module';
+import { BasketModule } from './basket/basket.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -25,13 +31,18 @@ import { TossModule } from './toss/toss.module';
           password: config.get<string>('DB_PASSWORD'),
           database: config.get<string>('DB_DATABASE'),
           entities: [__dirname + '/**/*.entity.{ts,js}'],
-          synchronize: true,
-          charset: 'utf8mb4', // ✅ This matters!
+          charset: 'utf8mb4', // ?�� This matters!
         };
       },
     }),
     AuthModule,
     TossModule,
+    MovieModule,
+    OrdersModule,
+    LectureModule,
+    GoodsModule,
+    BasketModule,
+    ProductModule,
   ],
   controllers: [],
   providers: [],

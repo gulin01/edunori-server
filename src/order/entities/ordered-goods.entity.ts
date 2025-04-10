@@ -7,6 +7,7 @@ import {
   Index,
 } from 'typeorm';
 import { OrderEntity } from './order.entity';
+import { Goods } from 'src/goods/entities/goods.entity';
 
 @Entity('tbod02')
 export class OrderGoodsEntity {
@@ -44,9 +45,16 @@ export class OrderGoodsEntity {
   use_coupon_number: string;
 
   /**
-   * Relation to tbod01 (OrderEntity)
+   * ? Relation to Goods
    */
-  @ManyToOne(() => OrderEntity, (order: any) => order.goods, {
+  @ManyToOne(() => Goods)
+  @JoinColumn({ name: 'gd_code', referencedColumnName: 'code' })
+  goods: Goods;
+
+  /**
+   * ? Relation to OrderEntity
+   */
+  @ManyToOne(() => OrderEntity, (order) => order.goods, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'order_code', referencedColumnName: 'order_code' })

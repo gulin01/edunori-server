@@ -1,9 +1,12 @@
+import { InterestField } from 'src/interest/entities/interest-field.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 @Entity('edunori_users')
@@ -61,4 +64,12 @@ export class User {
 
   @Column({ type: 'text', nullable: true })
   refresh_token: string | null;
+  // ? Add this block right before the closing brace
+  @ManyToMany(() => InterestField, (interest) => interest.users)
+  @JoinTable({
+    name: 'user_interest_fields',
+    joinColumn: { name: 'user_id', referencedColumnName: 'uid' },
+    inverseJoinColumn: { name: 'interest_id', referencedColumnName: 'id' },
+  })
+  interests: InterestField[];
 }

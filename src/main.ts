@@ -19,7 +19,7 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle('KeyEdu API')
+    .setTitle('EduNori API')
     .setDescription('API for EduNori mobile app')
     .setVersion('1.0')
     .addBearerAuth(
