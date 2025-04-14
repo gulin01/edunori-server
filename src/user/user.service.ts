@@ -7,7 +7,7 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
+    @InjectRepository(User, 'edunori_user')
     private readonly userRepo: Repository<User>,
   ) {}
 
@@ -37,7 +37,7 @@ export class UserService {
     await this.update(user);
   }
 
-  //key edu?œ¼ë¡? ë¡œê·¸?¸?‹œ
+  //key edu?ï¿½ï¿½ï¿?? ë¡œê·¸?ï¿½ï¿½?ï¿½ï¿½
 }
 
 // STEP 5: Add to .env file

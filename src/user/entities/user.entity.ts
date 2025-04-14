@@ -9,7 +9,7 @@ import {
   JoinTable,
 } from 'typeorm';
 
-@Entity('edunori_users')
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   uid: string;
@@ -67,7 +67,7 @@ export class User {
   // ? Add this block right before the closing brace
   @ManyToMany(() => InterestField, (interest) => interest.users)
   @JoinTable({
-    name: 'user_interest_fields',
+    name: 'user_interest',
     joinColumn: { name: 'user_id', referencedColumnName: 'uid' },
     inverseJoinColumn: { name: 'interest_id', referencedColumnName: 'id' },
   })

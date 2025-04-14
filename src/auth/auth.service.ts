@@ -73,7 +73,7 @@ export class AuthService {
   private googleClient: OAuth2Client;
 
   constructor(
-    @InjectRepository(User)
+    @InjectRepository(User, 'edunori_user')
     private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
@@ -199,7 +199,7 @@ export class AuthService {
   async generateTokens(
     user: User,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = { id: user.uid };
+    const payload = { uid: user.uid };
 
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1d',
@@ -285,7 +285,7 @@ export class AuthService {
   async validateApple(identityToken: string): Promise<User> {
     const appleKeysUrl = 'https://appleid.apple.com/auth/keys';
 
-    // Fetch Apple??™s public keys
+    // Fetch Apple??ï¿½s public keys
     const res: AxiosResponse<AppleKeyResponse> = await axios.get(appleKeysUrl);
     const keys = res.data.keys;
 

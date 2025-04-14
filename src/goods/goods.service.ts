@@ -48,7 +48,7 @@ export class GoodsService {
     return goods;
   }
 
-  async findAll(params: {
+  async getAllLectures(params: {
     page?: number;
     pageSize?: number;
     keyword?: string;
@@ -60,12 +60,50 @@ export class GoodsService {
 
     const query = this.goodsRepo
       .createQueryBuilder('g')
-      .leftJoinAndSelect('g.product', 'p') // If relation exists
+      .leftJoinAndSelect('g.product', 'p')
+      .where('p.lect_no > 0')
       .skip((page - 1) * pageSize)
       .take(pageSize);
 
     if (keyword) {
-      query.andWhere('g.gd_subject LIKE :kw OR p.pd_name LIKE :kw', {
+      query.andWhere('(g.gd_subject LIKE :kw OR p.pd_name LIKE :kw)', {
+        kw: `%${keyword}%`,
+      });
+    }
+
+    if (category) query.andWhere('p.category = :cat', { cat: category });
+    if (brand) query.andWhere('p.brand = :brand', { brand });
+    if (state) query.andWhere('g.state = :state', { state });
+
+    const [data, total] = await query.getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  async getAllBooks(params: {
+    page?: number;
+    pageSize?: number;
+    keyword?: string;
+    category?: number;
+    brand?: number;
+    state?: string;
+  }) {
+    const { page = 1, pageSize = 20, keyword, category, brand, state } = params;
+
+    const query = this.goodsRepo
+      .createQueryBuilder('g')
+      .leftJoinAndSelect('g.product', 'p')
+      .where('p.lect_no = 0')
+      .skip((page - 1) * pageSize)
+      .take(pageSize);
+
+    if (keyword) {
+      query.andWhere('(g.gd_subject LIKE :kw OR p.pd_name LIKE :kw)', {
         kw: `%${keyword}%`,
       });
     }

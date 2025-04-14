@@ -4,7 +4,7 @@ import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User], 'edunori_user')],
   providers: [UserService],
   exports: [UserService], // <-- so other modules (like AuthModule) can use it
 })

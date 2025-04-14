@@ -31,8 +31,8 @@ export class GoodsController {
     return this.goodsService.create(dto);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Get paginated list of goods with filters' })
+  @Get('books')
+  @ApiOperation({ summary: 'Get paginated list of books with filters' })
   @ApiResponse({
     status: 200,
     description: 'List of goods with pagination and filters',
@@ -56,10 +56,38 @@ export class GoodsController {
       },
     },
   })
-  findAll(@Query() query: GoodsQueryDto) {
-    return this.goodsService.findAll(query);
+  getAllLectures(@Query() query: GoodsQueryDto) {
+    return this.goodsService.getAllLectures(query);
   }
 
+  @Get('lectures')
+  @ApiOperation({ summary: 'Get paginated list of lectures with filters' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of goods with pagination and filters',
+    schema: {
+      example: {
+        data: [
+          {
+            code: 101,
+            gd_subject: 'Math Workbook',
+            state: 'active',
+            product: {
+              pd_name: 'Premium Math Series',
+              category: 1,
+              brand: 2,
+            },
+          },
+        ],
+        total: 50,
+        page: 1,
+        pageSize: 20,
+      },
+    },
+  })
+  findAllBooks(@Query() query: GoodsQueryDto) {
+    return this.goodsService.getAllBooks(query);
+  }
   @Get(':code')
   @ApiOperation({ summary: 'Get a single goods item by code' })
   @ApiParam({ name: 'code', type: Number, description: 'Goods code' })

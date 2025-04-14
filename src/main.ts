@@ -20,8 +20,10 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('EduNori API')
-    .setDescription('API for EduNori mobile app')
+    .setDescription('API for EduNori mobile and admin users')
     .setVersion('1.0')
+
+    // User token (default app users)
     .addBearerAuth(
       {
         type: 'http',
@@ -30,8 +32,21 @@ async function bootstrap() {
         name: 'Authorization',
         in: 'header',
       },
-      'accessToken', // <-- this is the name you'll reference in @ApiBearerAuth()
+      'user-token', // 👈 name used in @ApiBearerAuth('user-token')
     )
+
+    // Admin token (admin dashboard login)
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        in: 'header',
+      },
+      'admin-token', // 👈 name used in @ApiBearerAuth('admin-token')
+    )
+
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

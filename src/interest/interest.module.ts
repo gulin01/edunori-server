@@ -7,7 +7,7 @@ import { InterestField } from './entities/interest-field.entity';
 import { User } from 'src/user/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([InterestField, User])],
+  imports: [TypeOrmModule.forFeature([InterestField, User], 'edunori_user')],
   controllers: [InterestController],
   providers: [InterestService],
 })

@@ -1,5 +1,9 @@
 // interest.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { InterestField } from './entities/interest-field.entity';
@@ -10,10 +14,10 @@ import { User } from 'src/user/entities/user.entity';
 @Injectable()
 export class InterestService {
   constructor(
-    @InjectRepository(InterestField)
+    @InjectRepository(InterestField, 'edunori_user')
     private interestRepo: Repository<InterestField>,
 
-    @InjectRepository(User)
+    @InjectRepository(User, 'edunori_user')
     private userRepo: Repository<User>,
   ) {}
 
@@ -21,24 +25,47 @@ export class InterestService {
     const interest = this.interestRepo.create(dto);
     return this.interestRepo.save(interest);
   }
-
   async saveUserInterests(userId: string, interestIds: number[]) {
+    if (!Array.isArray(interestIds) || interestIds.length === 0) {
+      throw new BadRequestException('You must select at least one interest.');
+    }
+
+    if (interestIds.length > 5) {
+      throw new BadRequestException('You can select up to 5 interests only.');
+    }
+
     const user = await this.userRepo.findOne({
       where: { uid: userId },
       relations: ['interests'],
     });
 
-    if (!user) {
-      throw new NotFoundException(`User with uid ${userId} not found`);
-    }
+    if (!user) throw new NotFoundException('User not found');
 
-    const interests = await this.interestRepo.findBy({
+    const selectedInterests = await this.interestRepo.findBy({
       id: In(interestIds),
     });
-    user.interests = interests;
-    return this.userRepo.save(user);
-  }
 
+    user.interests = selectedInterests;
+    await this.userRepo.save(user);
+
+    return {
+      success: true,
+      message: 'Interests updated',
+      selectedInterestIds: interestIds,
+    };
+  }
+  async delete(id: number): Promise<{ success: boolean; message: string }> {
+    const result = await this.interestRepo.delete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Interest with ID ${id} not found`);
+    }
+
+    return {
+      success: true,
+      message: 'Interest deleted successfully',
+    };
+  }
   async getUserInterests(userId: string) {
     const user = await this.userRepo.findOne({
       where: { uid: userId },
@@ -46,5 +73,9 @@ export class InterestService {
     });
 
     return user?.interests ?? [];
+  }
+
+  async getAllInterests() {
+    return this.interestRepo.find(); // fetch all interest rows
   }
 }
