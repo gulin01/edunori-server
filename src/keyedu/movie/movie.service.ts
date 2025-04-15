@@ -15,7 +15,7 @@ export class MovieService {
   private readonly mobilePath = 'http://mvod.englishbus.co.kr/englishbusvod/';
 
   constructor(
-    @InjectRepository(MovieInfoEntity)
+    @InjectRepository(MovieInfoEntity, 'keyedu_connection')
     private readonly movieRepo: Repository<MovieInfoEntity>,
   ) {}
 

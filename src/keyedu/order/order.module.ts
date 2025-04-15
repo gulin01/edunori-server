@@ -6,7 +6,12 @@ import { OrderService } from './order.service';
 import { OrderController } from './oder.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrderEntity, OrderGoodsEntity])],
+  imports: [
+    TypeOrmModule.forFeature(
+      [OrderEntity, OrderGoodsEntity],
+      'keyedu_connection',
+    ),
+  ],
   controllers: [OrderController],
   providers: [OrderService],
 })

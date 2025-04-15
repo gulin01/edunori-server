@@ -7,7 +7,7 @@ import {
   Index,
 } from 'typeorm';
 import { OrderEntity } from './order.entity';
-import { Goods } from 'src/goods/entities/goods.entity';
+import { Goods } from 'src/keyedu/goods/entities/goods.entity';
 
 @Entity('tbod02')
 export class OrderGoodsEntity {

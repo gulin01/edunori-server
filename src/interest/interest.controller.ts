@@ -76,6 +76,7 @@ export class InterestController {
   @ApiResponse({ status: 200, description: 'User interests returned.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getUserInterests(@Req() req: AuthRequest) {
+    console.log(req.user.uid, 'req.user.uid');
     return this.interestService.getUserInterests(req.user.uid);
   }
   @Get('list')

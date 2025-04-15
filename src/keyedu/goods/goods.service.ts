@@ -14,7 +14,7 @@ import { Goods } from './entities/goods.entity';
 @Injectable()
 export class GoodsService {
   constructor(
-    @InjectRepository(Goods)
+    @InjectRepository(Goods, 'keyedu_connection')
     private readonly goodsRepo: Repository<Goods>,
     private readonly basketService: BasketService, // ? inject BasketService
   ) {}

@@ -11,7 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
   constructor(
     config: ConfigService,
-    @InjectRepository(AdminUser, 'edunori_user') // ? match your admin DB connection name
+    @InjectRepository(AdminUser, 'edunori_connection')
     private readonly adminRepo: Repository<AdminUser>,
   ) {
     super({

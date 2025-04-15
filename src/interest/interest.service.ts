@@ -10,15 +10,19 @@ import { InterestField } from './entities/interest-field.entity';
 
 import { CreateInterestDto } from './dto/create-interest.dto';
 import { User } from 'src/user/entities/user.entity';
+import { KeyEduCategory } from 'src/keyedu/category/entities/category.entity';
 
 @Injectable()
 export class InterestService {
   constructor(
-    @InjectRepository(InterestField, 'edunori_user')
+    @InjectRepository(InterestField, 'edunori_connection')
     private interestRepo: Repository<InterestField>,
 
-    @InjectRepository(User, 'edunori_user')
+    @InjectRepository(User, 'edunori_connection')
     private userRepo: Repository<User>,
+
+    @InjectRepository(KeyEduCategory, 'keyedu_connection')
+    private readonly keyeduCategoryRepo: Repository<KeyEduCategory>,
   ) {}
 
   async create(dto: CreateInterestDto) {
@@ -77,5 +81,28 @@ export class InterestService {
 
   async getAllInterests() {
     return this.interestRepo.find(); // fetch all interest rows
+  }
+
+  async syncCategoriesToInterestFields() {
+    const categories = await this.keyeduCategoryRepo.find({
+      where: { state: 'y' },
+    });
+
+    const existing = await this.interestRepo.find();
+
+    const newEntries = categories.filter(
+      (cat) => !existing.find((int) => int.categoryCode === cat.code),
+    );
+
+    for (const cat of newEntries) {
+      const interest = this.interestRepo.create({
+        name: cat.name,
+        categoryCode: cat.code,
+        categoryName: cat.name,
+      });
+      await this.interestRepo.save(interest);
+    }
+
+    return { inserted: newEntries.length };
   }
 }

@@ -7,7 +7,7 @@ import { BasketItemDto } from './dto/basket.dto';
 @Injectable()
 export class BasketService {
   constructor(
-    @InjectRepository(BasketEntity)
+    @InjectRepository(BasketEntity, 'edunori_connection')
     private readonly basketRepo: Repository<BasketEntity>,
   ) {}
   async getBasket(userId: string): Promise<BasketEntity[]> {

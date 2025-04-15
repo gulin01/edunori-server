@@ -73,7 +73,7 @@ export class AuthService {
   private googleClient: OAuth2Client;
 
   constructor(
-    @InjectRepository(User, 'edunori_user')
+    @InjectRepository(User, 'edunori_connection')
     private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
@@ -104,7 +104,7 @@ export class AuthService {
     }
 
     // Generate refresh token as JWT
-    const refreshPayload = { id: user.uid, type: 'refresh' };
+    const refreshPayload = { uid: user.uid, type: 'refresh' };
     const refreshToken = this.jwtService.sign(refreshPayload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '7d',
@@ -113,10 +113,10 @@ export class AuthService {
     // user.refresh_token = refreshToken;
     await this.userRepo.save(user);
 
-    const accessPayload = { id: user.uid };
+    const accessPayload = { uid: user.uid };
     const accessToken = this.jwtService.sign(accessPayload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: '15m',
+      expiresIn: '1d',
     });
 
     return { user, accessToken, refreshToken };

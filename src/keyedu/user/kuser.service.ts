@@ -2,12 +2,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { kUser } from './kuser.entity';
+import { kUser } from './entities/kuser.entity';
 
 @Injectable()
 export class kUserService {
   constructor(
-    @InjectRepository(kUser)
+    @InjectRepository(kUser, 'keyedu_connection')
     private readonly kuserRepo: Repository<kUser>,
   ) {}
 
@@ -23,7 +23,7 @@ export class kUserService {
       .andWhere('user.state = :state', { state: 'y' })
       .getOne();
   }
-  //key eduÏúºÎ°ú Î°úÍ∑∏Ïù∏Ïãú
+  //key edu?úºÎ°? Î°úÍ∑∏?ù∏?ãú
 }
 
 // STEP 5: Add to .env file

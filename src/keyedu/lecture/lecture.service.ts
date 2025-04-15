@@ -2,10 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ItemUnit, Lecture, LectureState } from './entities/lecture.entity';
-import { Goods } from 'src/goods/entities/goods.entity';
-import { ProductEntity } from 'src/product/entities/product.entity';
-import { TeacherInfo } from 'src/teacher/entity/teacher.entity';
-import { MovieInfoEntity } from 'src/movie/entities/move.entity';
+import { Goods } from 'src/keyedu/goods/entities/goods.entity';
 import { LectureMixedInfo } from './entities/lecture-mixed-info.entity';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
@@ -13,13 +10,11 @@ import { UpdateLectureDto } from './dto/update-lecture.dto';
 @Injectable()
 export class LectureService {
   constructor(
-    @InjectRepository(Lecture) private lectureRepo: Repository<Lecture>,
-    @InjectRepository(TeacherInfo) private teacherRepo: Repository<TeacherInfo>,
-    @InjectRepository(MovieInfoEntity)
-    @InjectRepository(Goods)
+    @InjectRepository(Lecture, 'keyedu_connection')
+    private lectureRepo: Repository<Lecture>,
+    @InjectRepository(Goods, 'keyedu_connection')
     private goodsRepo: Repository<Goods>,
-    @InjectRepository(ProductEntity)
-    @InjectRepository(LectureMixedInfo)
+    @InjectRepository(LectureMixedInfo, 'keyedu_connection')
     private mixedRepo: Repository<LectureMixedInfo>,
   ) {}
 

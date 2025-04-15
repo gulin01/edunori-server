@@ -8,7 +8,7 @@ import { AdminUser } from './entities/admin.entity';
 @Injectable()
 export class AdminService {
   constructor(
-    @InjectRepository(AdminUser, 'edunori_user')
+    @InjectRepository(AdminUser, 'edunori_connection')
     private readonly adminRepo: Repository<AdminUser>,
     private readonly jwtService: JwtService,
   ) {}

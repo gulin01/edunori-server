@@ -5,7 +5,7 @@ import { MovieController } from './movie.controller';
 import { MovieInfoEntity } from './entities/move.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MovieInfoEntity])],
+  imports: [TypeOrmModule.forFeature([MovieInfoEntity], 'keyedu_connection')],
   controllers: [MovieController],
   providers: [MovieService],
 })

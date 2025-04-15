@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Goods } from 'src/goods/entities/goods.entity';
+import { Goods } from 'src/keyedu/goods/entities/goods.entity';
 
 export enum ProductState {
   Y = 'y', // Active

@@ -9,15 +9,15 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService: ConfigService) {
+  constructor(private config: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'abc123', // You can hardcode or load from .env
+      secretOrKey: config.get<string>('JWT_SECRET') || 'abc123', // You can hardcode or load from .env
     });
   }
 
   validate(payload: JwtPayload) {
+    console.log('payload uid', payload.uid);
     return { uid: payload.uid };
   }
 }

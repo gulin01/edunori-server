@@ -9,7 +9,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 @Injectable()
 export class ProductService {
   constructor(
-    @InjectRepository(ProductEntity)
+    @InjectRepository(ProductEntity, 'keyedu_connection')
     private readonly productRepo: Repository<ProductEntity>,
   ) {}
 

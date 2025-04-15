@@ -1,4 +1,4 @@
-import { ProductEntity } from 'src/product/entities/product.entity';
+import { ProductEntity } from 'src/keyedu/product/entities/product.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

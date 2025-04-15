@@ -10,7 +10,7 @@ import { AdminJwtStrategy } from 'src/auth/strategies/admin-jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AdminUser], 'edunori_user'),
+    TypeOrmModule.forFeature([AdminUser], 'edunori_connection'),
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

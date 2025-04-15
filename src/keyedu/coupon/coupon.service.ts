@@ -14,13 +14,13 @@ import { UpdateCouponAutoDto } from './dto/update-coupon-auto.dto';
 @Injectable()
 export class CouponService {
   constructor(
-    @InjectRepository(CouponMain)
+    @InjectRepository(CouponMain, 'keyedu_connection')
     private readonly couponMainRepo: Repository<CouponMain>,
-    @InjectRepository(CouponSub)
+    @InjectRepository(CouponSub, 'keyedu_connection')
     private readonly couponSubRepo: Repository<CouponSub>,
-    @InjectRepository(CouponGoods)
+    @InjectRepository(CouponGoods, 'keyedu_connection')
     private readonly couponGoodsRepo: Repository<CouponGoods>,
-    @InjectRepository(CouponAuto)
+    @InjectRepository(CouponAuto, 'keyedu_connection')
     private readonly couponAutoRepo: Repository<CouponAuto>,
   ) {}
 

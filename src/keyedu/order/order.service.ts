@@ -13,9 +13,9 @@ import { ListOrdersDto } from './dto/list-orders.dto';
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(OrderEntity)
+    @InjectRepository(OrderEntity, 'keyedu_connection')
     private readonly orderRepo: Repository<OrderEntity>,
-    @InjectRepository(OrderGoodsEntity)
+    @InjectRepository(OrderGoodsEntity, 'keyedu_connection')
     private readonly orderGoodsRepo: Repository<OrderGoodsEntity>,
   ) {}
 
