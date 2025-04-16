@@ -7,7 +7,7 @@ services:
     container_name: edunori-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root25
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: edunori_dev
       MYSQL_USER: edunori
       MYSQL_PASSWORD: root25
