@@ -1,23 +1,27 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { InterestField } from 'src/interest/entities/interest-field.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
-@Entity('edunori_users') // Or 'edunori_users' if keeping the legacy name
+@Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid') // or 'increment'
-  uid: string; // Internal app ID or username
+  @PrimaryGeneratedColumn('uuid')
+  uid: string;
 
   @Column({ type: 'varchar', length: 20 })
-  provider_name: string; // e.g., 'google', 'kakao', 'naver'
+  provider_name: string;
 
   @Column({ type: 'varchar', length: 100, unique: true })
-  provider_id: string; // Unique user ID from provider
+  provider_id: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 255, charset: 'utf8mb4' })
   name: string;
 
   @Column({ type: 'varchar', length: 100, unique: true })
@@ -61,4 +65,13 @@ export class User {
 
   @Column({ type: 'text', nullable: true })
   refresh_token: string | null;
+
+  @ApiProperty({ type: () => [InterestField] })
+  @ManyToMany(() => InterestField, (interest) => interest.users)
+  @JoinTable({
+    name: 'user_interest',
+    joinColumn: { name: 'user_id', referencedColumnName: 'uid' },
+    inverseJoinColumn: { name: 'interest_id', referencedColumnName: 'id' },
+  })
+  interests: InterestField[];
 }

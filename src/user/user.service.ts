@@ -2,12 +2,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
+    @InjectRepository(User, 'edunori_connection')
     private readonly userRepo: Repository<User>,
   ) {}
 
@@ -18,8 +18,13 @@ export class UserService {
   async update(user: User): Promise<User> {
     return this.userRepo.save(user);
   }
-  async findBySocialId(socialId: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { provider_id: socialId } });
+  async findBySocialId(
+    socialId: string,
+    provider_name: string,
+  ): Promise<User | null> {
+    return this.userRepo.findOne({
+      where: { provider_id: socialId, provider_name },
+    });
   }
   async createUser(data: Partial<User>): Promise<User> {
     const user = this.userRepo.create(data);
@@ -32,7 +37,7 @@ export class UserService {
     await this.update(user);
   }
 
-  //key edu으로 로그인시
+  //key edu?���?? 로그?��?��
 }
 
 // STEP 5: Add to .env file
