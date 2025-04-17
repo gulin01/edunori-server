@@ -22,10 +22,13 @@ import { ProductModule } from './keyedu/product/product.module';
 import { CategoryModule } from './keyedu/category/category.module';
 import { KeyeduDatabaseModule } from './keyedu/keyedu-database.module';
 import { AdminUser } from './admin/entities/admin.entity';
+import { UserInterest } from './user/entities/user-interest.entity';
+import { BookModule } from './keyedu/book/book.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: '.env.local',
       isGlobal: true,
     }),
     // ✅ Keyedu  DB
@@ -42,9 +45,10 @@ import { AdminUser } from './admin/entities/admin.entity';
         username: config.get<string>('EDUNORI_DB_USERNAME'),
         password: config.get<string>('EDUNORI_DB_PASSWORD'),
         database: config.get<string>('EDUNORI_DB_DATABASE'), // edunori DB
-        entities: [User, InterestField, AdminUser], // or a path to only user-related entities
+        entities: [User, InterestField, AdminUser, UserInterest], // or a path to only user-related entities
         charset: 'utf8mb4',
         synchronize: true, // Only for dev; false in production
+        migrations: ['src/migrations/*.ts'], // 👈 required for migration:run
       }),
     }),
 
@@ -61,6 +65,7 @@ import { AdminUser } from './admin/entities/admin.entity';
     AdminModule,
     CategoryModule,
     KUserModule,
+    BookModule,
   ],
   controllers: [],
   providers: [],

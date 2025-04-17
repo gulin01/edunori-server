@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { InterestField } from 'src/interest/entities/interest-field.entity';
 import {
   Entity,
@@ -66,7 +65,6 @@ export class User {
   @Column({ type: 'text', nullable: true })
   refresh_token: string | null;
 
-  @ApiProperty({ type: () => [InterestField] })
   @ManyToMany(() => InterestField, (interest) => interest.users)
   @JoinTable({
     name: 'user_interest',

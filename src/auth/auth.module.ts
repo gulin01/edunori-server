@@ -15,7 +15,10 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // Add this at least once globally
+    ConfigModule.forRoot({
+      envFilePath: '.env.local',
+      isGlobal: true,
+    }), // Add this at least once globally
 
     PassportModule,
     JwtModule.register({

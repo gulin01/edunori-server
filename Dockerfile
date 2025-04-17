@@ -20,3 +20,6 @@ EXPOSE 3000
 
 # Run the app
 CMD ["npm", "run", "start:prod"]
+
+
+RUN npm cache clean --force

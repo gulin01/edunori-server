@@ -16,6 +16,8 @@ import {
   KeyEduCategory,
   kUser,
 } from './index'; // or point to the exact paths
+import { BookRoadmapSeries } from './book/entities/book-roadmap-series..entity';
+import { BannerInfo } from './book/entities/banner-info.entity';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import {
           Goods,
           OrderGoodsEntity,
           KeyEduCategory,
+          BookRoadmapSeries,
+          BannerInfo,
         ],
         charset: 'utf8mb4',
         synchronize: false,
