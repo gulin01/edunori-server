@@ -11,7 +11,7 @@ services:
       - edunori-db-data:/var/lib/mysql
       - ./edunori_dev_dump.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
-      MYSQL_ROOT_PASSWORD: root25
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: edunori_dev
       MYSQL_USER: edunori
       MYSQL_PASSWORD: root25
