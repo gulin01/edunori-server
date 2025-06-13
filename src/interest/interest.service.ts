@@ -29,6 +29,7 @@ export class InterestService {
     const interest = this.interestRepo.create(dto);
     return this.interestRepo.save(interest);
   }
+
   async saveUserInterests(userId: string, interestIds: number[]) {
     if (!Array.isArray(interestIds) || interestIds.length === 0) {
       throw new BadRequestException('You must select at least one interest.');

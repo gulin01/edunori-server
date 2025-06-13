@@ -1,99 +1,165 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# EduNori 서버 (edunori-server)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 1. 프로젝트 개요
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+EduNori 서버는 교육 플랫폼의 백엔드 API 서버로, 강의, 영화, 도서, 장바구니, 주문, 관심사 등 다양한 기능을 제공합니다. NestJS와 TypeORM 기반으로 구축되었으며, MySQL 데이터베이스와 소셜 로그인, 결제 연동을 지원합니다.
 
-## Description
+## 2. 기술 스택
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js (v18.x 이상)
+- NestJS (v11.x)
+- TypeScript
+- MySQL (v8.x)
+- TypeORM
+- Passport (JWT, Local, Kakao, Google, Naver)
+- Toss 결제 모듈
+- Swagger (API 문서화)
+- ESLint, Prettier
+- Docker, Docker Compose
 
-## Project setup
+## 3. 주요 기능
 
-```bash
-$ npm install
+- 사용자 인증/인가 (JWT, 소셜 로그인: Kakao, Google, Naver)
+- 관리자 인증/인가
+- 상품, 강의, 영화, 도서 CRUD
+- 장바구니, 주문, 관심사 관리
+- Toss 연동 결제
+- Swagger 기반 API 문서 제공 (`/api-docs`)
+- KeyEdu 및 Edunori MySQL DB 연동
+- 마이그레이션 지원 (TypeORM)
+
+## 4. 코드베이스 구조
+
+```
+📦 edunori-server
+├── infra
+│   ├── setup.sh          # EC2 초기 설정 스크립트
+│   └── start.sh          # EC2 배포 및 Docker 실행 스크립트
+├── edunori_dev_dump.sql  # 로컬 DB 초기 덤프 (SQL)
+├── src
+│   ├── main.ts           # 애플리케이션 진입점 및 Swagger 설정
+│   ├── app.module.ts     # 전역 모듈 및 DB 연결 설정
+│   ├── auth              # 인증 모듈 (JWT, Passport 전략)
+│   ├── toss              # Toss 결제 모듈
+│   ├── keyedu            # 외부 KeyEdu DB 연동 모듈
+│   ├── user              # 사용자 관련 엔티티/서비스/컨트롤러
+│   ├── interest          # 관심사 관련 엔티티/서비스/컨트롤러
+│   ├── admin             # 관리자 관련 엔티티/서비스/컨트롤러
+│   ├── basket            # 장바구니 관련 엔티티/서비스/컨트롤러
+│   ├── movie             # 영화 관련 엔티티/서비스/컨트롤러
+│   ├── lecture           # 강의 관련 엔티티/서비스/컨트롤러
+│   ├── goods             # 상품 관련 엔티티/서비스/컨트롤러
+│   ├── product           # 제품 관련 엔티티/서비스/컨트롤러
+│   ├── category          # 카테고리 관련 엔티티/서비스/컨트롤러
+│   ├── book              # 도서 관련 엔티티/서비스/컨트롤러
+│   └── common            # 공통 미들웨어/필터/인터셉터 등
+├── docker-compose.yml    # 로컬 Docker 환경 구성
+├── Dockerfile            # 애플리케이션 Docker 이미지 빌드
+├── .env.local            # 로컬 환경 변수 예시 파일
+├── package.json          # npm 스크립트 및 의존성
+├── tsconfig.json         # TypeScript 컴파일러 설정
+├── eslint.config.mjs     # ESLint 설정
+└── README.md             # 프로젝트 설명서 (본 문서)
 ```
 
-## Compile and run the project
+## 5. 환경 변수 설정
 
-```bash
-# development
-$ npm run start
+- 프로젝트 루트에 `.env.local` 파일 생성 후 아래 예시 참고하여 설정합니다.
 
-# watch mode
-$ npm run start:dev
+```dotenv
+# KeyEdu DB (원격)
+KEYEDU_DB_HOST=xx.x.xx.xxx
+KEYEDU_DB_PORT=3306
+KEYEDU_DB_USERNAME=xxxxxxxxx
+KEYEDU_DB_PASSWORD=xxxxxxx
+KEYEDU_DB_DATABASE=xxxxxx
 
-# production mode
-$ npm run start:prod
+# Edunori DB (로컬, Docker Compose 자동 초기화)
+EDUNORI_DB_HOST=xxxxxx
+EDUNORI_DB_PORT=3306
+EDUNORI_DB_USERNAME=xxxx
+EDUNORI_DB_PASSWORD=xxxxx
+EDUNORI_DB_DATABASE=xxxxxx
+
+# Social Login
+KAKAO_CLIENT_ID=...
+KAKAO_CLIENT_SECRET=...
+KAKAO_REDIRECT_URI=http://localhost:3000/auth/kakao/callback
+
+GOOGLE_CLIENT_ID=...
+
+# JWT 설정
+JWT_SECRET=...
+JWT_EXPIRES_IN=1d
+
+# Toss 결제
+TOSS_SECRET_KEY=...
 ```
 
-## Run tests
+## 6. 로컬 실행 (Docker Compose)
 
 ```bash
-# unit tests
-$ npm run test
+# Docker 컨테이너 빌드 및 실행
+docker-compose up --build -d
 
-# e2e tests
-$ npm run test:e2e
+# 실행 로그 확인
+docker-compose logs -f edunori-app
 
-# test coverage
-$ npm run test:cov
+# 애플리케이션 접속 (Swagger API 문서)
+http://localhost:3000/api-docs
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 7. 개발 모드 실행 (Nest CLI)
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+# 의존성 설치
+npm install
+
+# 개발 모드 (핫 리로드)
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 8. 테스트
 
-## Resources
+```bash
+# 단위 테스트
+npm run test
 
-Check out a few resources that may come in handy when working with NestJS:
+# e2e 테스트
+npm run test:e2e
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# 테스트 커버리지
+npm run test:cov
+```
 
-## Support
+## 9. 마이그레이션 (TypeORM)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# 마이그레이션 생성
+npm run migration:generate -- -n <MigrationName>
 
-## Stay in touch
+# 마이그레이션 실행
+npm run migration:run
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# 마이그레이션 롤백
+npm run migration:revert
+```
 
-## License
+## 10. 배포 (EC2)
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# edunori-server
+```bash
+# EC2 초기 설정 (Ubuntu on AWS EC2)
+bash infra/setup.sh
+
+# 코드 업데이트 및 컨테이너 재시작
+bash infra/start.sh
+```
+
+## 11. 기타
+
+- 코드 스타일: ESLint, Prettier 설정 포함
+- Swagger 모듈: `src/main.ts`에서 `/api-docs` 엔드포인트 제공
+
+---
+
+_본 문서는 edunori-server 프로젝트의 인수인계(인수인계서) 용도로 작성되었습니다._
